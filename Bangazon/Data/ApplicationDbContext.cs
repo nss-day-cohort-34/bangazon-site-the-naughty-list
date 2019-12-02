@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Bangazon.Data {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
-        public ApplicationDbContext (DbContextOptions<ApplicationDbContext> options) : base (options) { }
+namespace Bangazon.Data
+{
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Product> Product { get; set; }
         public DbSet<ProductType> ProductType { get; set; }
@@ -16,34 +18,35 @@ namespace Bangazon.Data {
         public DbSet<Order> Order { get; set; }
         public DbSet<OrderProduct> OrderProduct { get; set; }
 
-        protected override void OnModelCreating (ModelBuilder modelBuilder) {
-            base.OnModelCreating (modelBuilder);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
             // Customize the ASP.NET Identity model and override the defaults if needed.
             // For example, you can rename the ASP.NET Identity table names and more.
             // Add your customizations after calling base.OnModelCreating(builder);
-            modelBuilder.Entity<Order> ()
-                .Property (b => b.DateCreated)
-                .HasDefaultValueSql ("GETDATE()");
+            modelBuilder.Entity<Order>()
+                .Property(b => b.DateCreated)
+                .HasDefaultValueSql("GETDATE()");
 
             // Restrict deletion of related order when OrderProducts entry is removed
-            modelBuilder.Entity<Order> ()
-                .HasMany (o => o.OrderProducts)
-                .WithOne (l => l.Order)
-                .OnDelete (DeleteBehavior.Restrict);
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderProducts)
+                .WithOne(l => l.Order)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Product> ()
-                .Property (b => b.DateCreated)
-                .HasDefaultValueSql ("GETDATE()");
+            modelBuilder.Entity<Product>()
+                .Property(b => b.DateCreated)
+                .HasDefaultValueSql("GETDATE()");
 
             // Restrict deletion of related product when OrderProducts entry is removed
-            modelBuilder.Entity<Product> ()
-                .HasMany (o => o.OrderProducts)
-                .WithOne (l => l.Product)
-                .OnDelete (DeleteBehavior.Restrict);
+            modelBuilder.Entity<Product>()
+                .HasMany(o => o.OrderProducts)
+                .WithOne(l => l.Product)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PaymentType> ()
-                .Property (b => b.DateCreated)
-                .HasDefaultValueSql ("GETDATE()");
+            modelBuilder.Entity<PaymentType>()
+                .Property(b => b.DateCreated)
+                .HasDefaultValueSql("GETDATE()");
 
             ApplicationUser user = new ApplicationUser
             {
@@ -63,20 +66,48 @@ namespace Bangazon.Data {
             user.PasswordHash = passwordHash.HashPassword(user, "Admin8*");
             modelBuilder.Entity<ApplicationUser>().HasData(user);
 
-            modelBuilder.Entity<PaymentType> ().HasData (
+            ApplicationUser tom = new ApplicationUser
+            {
+                FirstName = "Tom",
+                LastName = "Cat",
+                StreetAddress = "123 Feline Way",
+                UserName = "tom@cat.com",
+                NormalizedUserName = "TOM@CAT.COM",
+                Email = "tom@cat.com",
+                NormalizedEmail = "TOM@CAT.COM",
+                EmailConfirmed = true,
+                LockoutEnabled = false,
+                SecurityStamp = "7f434309-a4d9-48e9-9ebb-8803db794578",
+                Id = "00000000-ffff-ffff-ffff-fffffffffffg"
+            };
+            var tomPasswordHash = new PasswordHasher<ApplicationUser>();
+            tom.PasswordHash = passwordHash.HashPassword(tom, "Admin8*");
+            modelBuilder.Entity<ApplicationUser>().HasData(tom);
+
+            modelBuilder.Entity<PaymentType>().HasData(
                 new PaymentType()
                 {
                     PaymentTypeId = 1,
                     UserId = user.Id,
                     Description = "American Express",
-                    AccountNumber = "86753095551212"
+                    AccountNumber = "86753095551212",
+                    Active = true
                 },
                 new PaymentType()
                 {
                     PaymentTypeId = 2,
                     UserId = user.Id,
                     Description = "Discover",
-                    AccountNumber = "4102948572991"
+                    AccountNumber = "4102948572991",
+                    Active = true
+                },
+                new PaymentType()
+                {
+                    PaymentTypeId = 3,
+                    UserId = tom.Id,
+                    Description = "Master Card",
+                    AccountNumber = "5102948571234",
+                    Active = true
                 }
             );
 
@@ -142,27 +173,33 @@ namespace Bangazon.Data {
                     Description = "It flies high",
                     Title = "Kite",
                     Quantity = 100,
-                    Price = 2.99
+                    Price = 2.99,
+                    Active = true,
+                    City = "Nashville"
                 },
                 new Product()
                 {
                     ProductId = 2,
                     ProductTypeId = 2,
-                    UserId = user.Id,
+                    UserId = tom.Id,
                     Description = "It rolls fast",
                     Title = "Wheelbarrow",
                     Quantity = 5,
-                    Price = 29.99
+                    Price = 29.99,
+                    Active = true,
+                    City = "Louisville"
                 },
                 new Product()
                 {
                     ProductId = 3,
                     ProductTypeId = 3,
-                    UserId = user.Id,
+                    UserId = tom.Id,
                     Description = "It cuts things",
                     Title = "Saw",
                     Quantity = 18,
-                    Price = 31.49
+                    Price = 31.49,
+                    Active = true,
+                    City = "Nashville"
                 },
                 new Product()
                 {
@@ -172,7 +209,9 @@ namespace Bangazon.Data {
                     Description = "It puts holes in things",
                     Title = "Electric Drill",
                     Quantity = 12,
-                    Price = 24.89
+                    Price = 24.89,
+                    Active = true,
+                    City = "Chicago"
                 },
                 new Product()
                 {
@@ -182,34 +221,95 @@ namespace Bangazon.Data {
                     Description = "It puts things together",
                     Title = "Hammer",
                     Quantity = 32,
-                    Price = 22.69
+                    Price = 22.69,
+                    Active = true
                 }
             );
 
-            modelBuilder.Entity<Order> ().HasData (
+            modelBuilder.Entity<Order>().HasData(
                 new Order()
                 {
                     OrderId = 1,
                     UserId = user.Id,
                     PaymentTypeId = null
+                },
+                new Order()
+                {
+                    OrderId = 2,
+                    UserId = user.Id,
+                    PaymentTypeId = 2
+                },
+                new Order()
+                {
+                    OrderId = 3,
+                    UserId = user.Id,
+                    PaymentTypeId = null
+                },
+                new Order()
+                {
+                    OrderId = 4,
+                    UserId = tom.Id,
+                    PaymentTypeId = null
+                },
+                new Order()
+                {
+                    OrderId = 5,
+                    UserId = tom.Id,
+                    PaymentTypeId = 3
                 }
             );
 
-            modelBuilder.Entity<OrderProduct> ().HasData (
+            modelBuilder.Entity<OrderProduct>().HasData(
                 new OrderProduct()
                 {
                     OrderProductId = 1,
                     OrderId = 1,
-                    ProductId = 1
+                    ProductId = 2
                 }
             );
 
-            modelBuilder.Entity<OrderProduct> ().HasData (
+            modelBuilder.Entity<OrderProduct>().HasData(
                 new OrderProduct()
                 {
                     OrderProductId = 2,
                     OrderId = 1,
+                    ProductId = 3
+                }
+            );
+
+            modelBuilder.Entity<OrderProduct>().HasData(
+                new OrderProduct()
+                {
+                    OrderProductId = 3,
+                    OrderId = 2,
                     ProductId = 2
+                }
+            );
+
+            modelBuilder.Entity<OrderProduct>().HasData(
+                new OrderProduct()
+                {
+                    OrderProductId = 4,
+                    OrderId = 3,
+                    ProductId = 3
+                }
+            );
+
+            modelBuilder.Entity<OrderProduct>().HasData(
+                new OrderProduct()
+                {
+                    OrderProductId = 5,
+                    OrderId = 4,
+                    ProductId = 1
+                }
+            );
+
+            modelBuilder.Entity<OrderProduct>().HasData(
+                new OrderProduct()
+                {
+                    OrderProductId = 6,
+                    OrderId = 5,
+                    ProductId = 4
                 }
             );
         }
