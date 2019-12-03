@@ -11,5 +11,6 @@ namespace Bangazon.Models
         public string TypeName { get; set; }
         public int ProductCount { get; set; }
         public IEnumerable<Product> Products { get; set; }
+        public List<Product> ProductsList { get; set; }
     }
 }
