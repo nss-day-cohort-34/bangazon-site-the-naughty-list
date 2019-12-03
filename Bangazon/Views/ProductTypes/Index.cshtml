@@ -19,19 +19,20 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Label) (@item.Products.Count)
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Label) (@item.Products.Count)
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ProductTypeId">Details</a>
+                </td>
                 @foreach (var product in item.Products.Take(3))
                 {
-            <td>@Html.ActionLink(product.Title.ToString(), "Details", "Products", new { id = product.ProductId })</td>
-                }
-            </td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.ProductTypeId">Details</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+                <tr><td>@Html.ActionLink(product.Title.ToString(), "Details", "Products", new { id = product.ProductId })</td></tr>
+            }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>

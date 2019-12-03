@@ -24,7 +24,7 @@ namespace Bangazon.Controllers
         {
             var applicationDbContext = _context.ProductType
                                     .Include(pt => pt.Products)
-                                    .Where(pt => pt.Products.Count > 0);
+                                    .OrderBy(pt => pt.Label);
 
             return View(await applicationDbContext.ToListAsync());
         }
