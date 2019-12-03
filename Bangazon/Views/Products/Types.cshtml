@@ -19,7 +19,8 @@
 @foreach (var type in Model.GroupedProducts) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => type.TypeName) (@Html.DisplayFor(modelItem => type.ProductCount))
+                @* NOTE: Name of key in object for routeValues has to match the name of the parameter in the method on the controller *@
+                @Html.ActionLink(type.TypeName.ToString(), "GetProductListForCategory", "Products", new { productTypeId = type.TypeId } ) (@Html.DisplayFor(modelItem => type.ProductCount))
             </td>
         </tr>
         @foreach(var product in type.Products)

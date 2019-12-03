@@ -82,6 +82,17 @@ namespace Bangazon.Controllers
             return RedirectToAction(nameof(Details), new { id = productId });
         }
 
+        // NOTE: Have to name the parameter in this function the same as the key in the anonymous object on the Razor page
+        public async Task<IActionResult> GetProductListForCategory( int productTypeId)
+        {
+            var productList = await _context.Product
+                .Include(p => p.ProductType)
+                .Where(p => p.ProductTypeId == productTypeId && p.Active == true)
+                .ToListAsync();
+
+            return View(productList);
+        }
+
         // GET: Products
         public async Task<IActionResult> Index()
         {

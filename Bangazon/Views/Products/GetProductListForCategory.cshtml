@@ -1,0 +1,39 @@
+﻿@model List<Bangazon.Models.Product>
+
+@{
+    ViewData["Title"] = "GetProductListForCategory";
+}
+
+<h1>@Model[0].ProductType.Label</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Quantity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.ActionLink(item.Title.ToString(), "Details", "Products", new { id=item.ProductId })
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
