@@ -8,18 +8,24 @@ using Microsoft.EntityFrameworkCore;
 using Bangazon.Data;
 using Bangazon.Models;
 using Bangazon.Models.ProductViewModels;
+using Microsoft.AspNetCore.Identity;
 
 namespace Bangazon.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProductsController(ApplicationDbContext context)
+
+        public ProductsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+
         }
 
+        private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
         public async Task<IActionResult> Types()
         {
@@ -37,6 +43,40 @@ namespace Bangazon.Controllers
                 }).ToListAsync();
 
             return View(model);
+        }
+
+        public async Task<IActionResult> AddToOrder(int productId)
+        {
+            var user = await GetCurrentUserAsync();
+            // Check to see if active user (customer) has an open order
+            var openOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+            var orderId = 0;
+            if (openOrder == null)
+            {
+            // -- if no, create order in the order table and return new order ID
+                var newOrder = new Order()
+                {
+                    UserId = user.Id.ToString()
+                };
+                _context.Add(newOrder);
+                await _context.SaveChangesAsync();
+                var addedOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+                orderId = addedOrder.OrderId;
+            }
+            else
+            {
+                orderId = openOrder.OrderId;
+            }
+            // then create entry in order product table using the order ID and product ID
+            var newOrderProduct = new OrderProduct()
+            {
+                OrderId = orderId,
+                ProductId = productId
+            };
+            _context.Add(newOrderProduct);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = productId });
         }
 
         // GET: Products
