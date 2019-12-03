@@ -85,12 +85,24 @@ namespace Bangazon.Controllers
         // NOTE: Have to name the parameter in this function the same as the key in the anonymous object on the Razor page
         public async Task<IActionResult> GetProductListForCategory( int productTypeId)
         {
-            var productList = await _context.Product
-                .Include(p => p.ProductType)
-                .Where(p => p.ProductTypeId == productTypeId && p.Active == true)
-                .ToListAsync();
+            //var productList = await _context.Product
+            //    .Include(p => p.ProductType)
+            //    .Where(p => p.ProductTypeId == productTypeId && p.Active == true)
+            //    .ToListAsync();
 
-            return View(productList);
+            var productGroup = await _context
+                .ProductType
+                    .OrderBy(pt => pt.Label)
+                    .Where(pt => pt.ProductTypeId == productTypeId)
+                    .Select(pt => new GroupedProducts
+                    {
+                        TypeId = pt.ProductTypeId,
+                        TypeName = pt.Label,
+                        ProductCount = pt.Products.Where(p => p.Active == true).Count(),
+                        ProductsList = pt.Products.OrderByDescending(p => p.DateCreated).Where(p => p.Active == true).ToList()
+                    }).SingleOrDefaultAsync();
+
+            return View(productGroup);
         }
 
         // GET: Products
