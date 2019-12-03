@@ -41,7 +41,7 @@
             @Html.DisplayFor(model => model.City)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ProductType)
+            @Html.DisplayNameFor(model => model.ProductTypeId)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.ProductType.Label)
@@ -53,6 +53,8 @@
         <input type="hidden" asp-for="ProductId" />
         <input type="submit" value="Add To Order" class="btn btn-primary" />
     </form>
+    <div>    @TempData["SuccessMessage"] </div>
+
     <a asp-action="Edit" asp-route-id="@Model.ProductId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Types">View Product Categories List</a>
 </div>

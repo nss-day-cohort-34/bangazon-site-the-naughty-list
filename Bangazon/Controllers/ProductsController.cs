@@ -49,7 +49,7 @@ namespace Bangazon.Controllers
         {
             var user = await GetCurrentUserAsync();
             // Check to see if active user (customer) has an open order
-            var openOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+            var openOrder = await _context.Order.FirstOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
             var orderId = 0;
             if (openOrder == null)
             {
@@ -60,7 +60,7 @@ namespace Bangazon.Controllers
                 };
                 _context.Add(newOrder);
                 await _context.SaveChangesAsync();
-                var addedOrder = await _context.Order.SingleOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
+                var addedOrder = await _context.Order.FirstOrDefaultAsync(o => o.User == user && o.PaymentTypeId == null);
                 orderId = addedOrder.OrderId;
             }
             else
@@ -75,6 +75,9 @@ namespace Bangazon.Controllers
             };
             _context.Add(newOrderProduct);
             await _context.SaveChangesAsync();
+
+            var errMsg = TempData["SuccessMessage"] as string;
+            TempData["SuccessMessage"] = "This product has been added to your shopping cart";
 
             return RedirectToAction(nameof(Details), new { id = productId });
         }
