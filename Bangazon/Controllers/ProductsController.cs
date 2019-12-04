@@ -10,6 +10,7 @@ using Bangazon.Models;
 using Bangazon.Models.ProductViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Bangazon.Models.ReportViewModels;
 
 namespace Bangazon.Controllers
 {
@@ -269,6 +270,26 @@ namespace Bangazon.Controllers
                 .ToListAsync();
                 
             return View(incompleteOrders);
+        }
+        public async Task<IActionResult> MultipleOrders()
+        {
+            var user = await GetCurrentUserAsync();
+
+            var model = new MultipleOrdersViewModel();
+
+            
+            model.MultipleOrdersList = await _context.ApplicationUsers
+                .Include(u => u.Orders)
+                .Where(u => u.Orders.Any(o => o.OrderProducts.Any(op => op.Product.User == user)))
+                .Where(u => u.Orders.Where(o => o.PaymentTypeId == null).Count() > 1)
+                .Select(u => new UserOrderCount
+                {
+                    User = u,
+                    OpenOrderCount = u.Orders.Where(o => o.PaymentTypeId == null).Count()
+                })
+                .ToListAsync();
+
+            return View(model);
         }
     }
 }
