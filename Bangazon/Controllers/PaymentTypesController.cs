@@ -72,6 +72,7 @@ namespace Bangazon.Controllers
 
                 var user = await _userManager.GetUserAsync(HttpContext.User);
                 paymentType.UserId = user.Id;
+                paymentType.Active = true;
                 _context.Add(paymentType);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
