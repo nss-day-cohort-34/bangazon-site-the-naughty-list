@@ -17,11 +17,13 @@ namespace Bangazon.Models
         public DateTime DateCreated {get;set;}
 
         [Required]
-        [StringLength(255)]
+        [StringLength(255, ErrorMessage = "Please shorten the product description to 255 characters")]
+        [RegularExpression(@"^[^!@#$%^&*()]+$", ErrorMessage = "The product description cannot contain the following special characters: !@#$%^&*().")]
         public string Description { get; set; }
 
         [Required]
         [StringLength(55, ErrorMessage="Please shorten the product title to 55 characters")]
+        [RegularExpression(@"^[^!@#$%^&*()]+$", ErrorMessage = "The product title cannot contain the following special characters: !@#$%^&*().")]
         public string Title { get; set; }
 
         [Required]
