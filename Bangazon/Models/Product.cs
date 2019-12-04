@@ -18,6 +18,7 @@ namespace Bangazon.Models
 
         [Required]
         [StringLength(255)]
+        //[RegularExpression(@"^((?!hede).) *$", ErrorMessage = "The description cannot contain the following special characters: !@#$%^&*(). Please try again")]
         public string Description { get; set; }
 
         [Required]

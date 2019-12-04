@@ -10,6 +10,7 @@ using Bangazon.Models;
 using Bangazon.Models.ProductViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
 
 namespace Bangazon.Controllers
 {
@@ -79,7 +80,7 @@ namespace Bangazon.Controllers
             _context.Add(newOrderProduct);
             await _context.SaveChangesAsync();
 
-            var errMsg = TempData["SuccessMessage"] as string;
+            var successMsg = TempData["SuccessMessage"] as string;
             TempData["SuccessMessage"] = "This product has been added to your shopping cart";
 
             return RedirectToAction(nameof(Details), new { id = productId });
@@ -154,10 +155,20 @@ namespace Bangazon.Controllers
                 var user = await GetCurrentUserAsync();
                 viewModel.Product.UserId = user.Id;
                 viewModel.Product.Active = true;
-
                 _context.Add(viewModel.Product);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(MyProducts));
+
+                if (Regex.IsMatch(viewModel.Product.Description, @"[!@#$%^&*()]"))
+                {
+                    var errMsg = TempData["ErrorMessage"] as string;
+                    TempData["ErrorMessage"] = "The description cannot contain the following special characters: !@#$%^&*(). Please try again";
+                    return View(viewModel);
+                }
+
+                else
+                {
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(MyProducts));
+                }
             }
             return View(viewModel);
         }
