@@ -192,10 +192,14 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var user = await GetCurrentUserAsync();
+                    product.UserId = user.Id;
                     _context.Update(product);
                     await _context.SaveChangesAsync();
                 }
