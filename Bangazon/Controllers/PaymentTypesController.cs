@@ -18,16 +18,19 @@ namespace Bangazon.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public PaymentTypesController(ApplicationDbContext context)
+        public PaymentTypesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: PaymentTypes
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.PaymentType.Include(p => p.User);
-            return View(await applicationDbContext.ToListAsync());
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            var userPaymentTypes = await _context.PaymentType.Where(p => p.UserId == user.Id)
+                                            .ToListAsync();
+            return View(userPaymentTypes);
         }
 
         // GET: PaymentTypes/Details/5
@@ -66,6 +69,7 @@ namespace Bangazon.Controllers
             ModelState.Remove("UserId");
             if (ModelState.IsValid)
             {
+
                 var user = await _userManager.GetUserAsync(HttpContext.User);
                 paymentType.UserId = user.Id;
                 _context.Add(paymentType);
