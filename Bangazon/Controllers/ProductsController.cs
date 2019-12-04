@@ -257,5 +257,18 @@ namespace Bangazon.Controllers
         {
             return _context.Product.Any(e => e.ProductId == id);
         }
+
+        public async Task<IActionResult> IncompleteOrders()
+        {
+            var user = await GetCurrentUserAsync();
+            var incompleteOrders = await _context.Order
+                .Include(o => o.User)
+                .Include(o => o.OrderProducts)
+                .ThenInclude(op => op.Product)
+                .Where(o => o.PaymentType == null && o.OrderProducts.Any(op => op.Product.User == user))
+                .ToListAsync();
+                
+            return View(incompleteOrders);
+        }
     }
 }
