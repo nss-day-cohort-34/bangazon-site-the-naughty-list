@@ -57,7 +57,7 @@ namespace Bangazon.Controllers
             var orderId = 0;
             if (openOrder == null)
             {
-            // -- if no, create order in the order table and return new order ID
+                // -- if no, create order in the order table and return new order ID
                 var newOrder = new Order()
                 {
                     UserId = user.Id.ToString()
@@ -87,7 +87,7 @@ namespace Bangazon.Controllers
         }
 
         // NOTE: Have to name the parameter in this function the same as the key in the anonymous object on the Razor page
-        public async Task<IActionResult> GetProductListForCategory( int productTypeId)
+        public async Task<IActionResult> GetProductListForCategory(int productTypeId)
         {
             var productGroup = await _context
                 .ProductType
@@ -148,6 +148,12 @@ namespace Bangazon.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductCreateViewModel viewModel)
         {
+            // When the process of creating a product fails due to ModelState validation or regex matching, the app needs to get the product categories again, so a newViewModel variable was needed inside this method.
+            var newViewModel = new ProductCreateViewModel()
+            {
+                ProductTypes = GetProductCategories()
+            };
+
             ModelState.Remove("Product.UserId");
             ModelState.Remove("Product.User");
             if (ModelState.IsValid)
@@ -157,11 +163,18 @@ namespace Bangazon.Controllers
                 viewModel.Product.Active = true;
                 _context.Add(viewModel.Product);
 
-                if (Regex.IsMatch(viewModel.Product.Description, @"[!@#$%^&*()]"))
+                if (Regex.IsMatch(viewModel.Product.Title, @"[!@#$%^&*()]"))
                 {
-                    var errMsg = TempData["ErrorMessage"] as string;
-                    TempData["ErrorMessage"] = "The description cannot contain the following special characters: !@#$%^&*(). Please try again";
-                    return View(viewModel);
+                    var errMsg = TempData["TitleErrorMessage"] as string;
+                    TempData["TitleErrorMessage"] = "The title cannot contain the following special characters: !@#$%^&*(). Please try again.";
+                    return View(newViewModel);
+                }
+
+                else if (Regex.IsMatch(viewModel.Product.Description, @"[!@#$%^&*()]"))
+                {
+                    var errMsg = TempData["DescriptionErrorMessage"] as string;
+                    TempData["DescriptionErrorMessage"] = "The description cannot contain the following special characters: !@#$%^&*(). Please try again.";
+                    return View(newViewModel);
                 }
 
                 else
@@ -170,7 +183,7 @@ namespace Bangazon.Controllers
                     return RedirectToAction(nameof(MyProducts));
                 }
             }
-            return View(viewModel);
+            return View(newViewModel);
         }
 
         // GET: Products/Edit/5
@@ -281,5 +294,10 @@ namespace Bangazon.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
+        private List<ProductType> GetProductCategories()
+        {
+            var productTypes = _context.ProductType.OrderBy(pt => pt.Label).ToList();
+            return productTypes;
+        }
     }
 }
