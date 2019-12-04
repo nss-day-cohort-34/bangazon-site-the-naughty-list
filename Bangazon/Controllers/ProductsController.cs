@@ -88,11 +88,6 @@ namespace Bangazon.Controllers
         // NOTE: Have to name the parameter in this function the same as the key in the anonymous object on the Razor page
         public async Task<IActionResult> GetProductListForCategory( int productTypeId)
         {
-            //var productList = await _context.Product
-            //    .Include(p => p.ProductType)
-            //    .Where(p => p.ProductTypeId == productTypeId && p.Active == true)
-            //    .ToListAsync();
-
             var productGroup = await _context
                 .ProductType
                     .OrderBy(pt => pt.Label)
@@ -162,7 +157,7 @@ namespace Bangazon.Controllers
 
                 _context.Add(viewModel.Product);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Types));
+                return RedirectToAction(nameof(MyProducts));
             }
             return View(viewModel);
         }
@@ -215,7 +210,7 @@ namespace Bangazon.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyProducts));
             }
             ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
             ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
@@ -248,14 +243,28 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Product.FindAsync(id);
-            _context.Product.Remove(product);
+            product.Active = false;
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(MyProducts));
         }
 
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);
         }
+
+        // Seller Methods
+        // GET: Products
+        public async Task<IActionResult> MyProducts()
+        {
+            var user = await GetCurrentUserAsync();
+            var applicationDbContext = _context.Product
+                .Include(p => p.ProductType)
+                .Include(p => p.User)
+                .Where(p => p.UserId == user.Id && p.Active == true);
+
+            return View(await applicationDbContext.ToListAsync());
+        }
+
     }
 }
