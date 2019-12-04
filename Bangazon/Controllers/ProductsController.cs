@@ -163,25 +163,8 @@ namespace Bangazon.Controllers
                 viewModel.Product.Active = true;
                 _context.Add(viewModel.Product);
 
-                if (Regex.IsMatch(viewModel.Product.Title, @"[!@#$%^&*()]"))
-                {
-                    var errMsg = TempData["TitleErrorMessage"] as string;
-                    TempData["TitleErrorMessage"] = "The title cannot contain the following special characters: !@#$%^&*(). Please try again.";
-                    return View(newViewModel);
-                }
-
-                else if (Regex.IsMatch(viewModel.Product.Description, @"[!@#$%^&*()]"))
-                {
-                    var errMsg = TempData["DescriptionErrorMessage"] as string;
-                    TempData["DescriptionErrorMessage"] = "The description cannot contain the following special characters: !@#$%^&*(). Please try again.";
-                    return View(newViewModel);
-                }
-
-                else
-                {
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(MyProducts));
-                }
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(MyProducts));
             }
             return View(newViewModel);
         }
