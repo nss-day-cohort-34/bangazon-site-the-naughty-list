@@ -62,5 +62,25 @@ namespace Bangazon.Controllers
 
             return View(model);
         }
+
+        public async Task<IActionResult> AbandonedProductTypes()
+        {
+            var user = await GetCurrentUserAsync();
+
+            var model = new ProductTypesViewModel();
+
+            model.GroupedProducts = await _context
+                .ProductType
+                .OrderBy(pt => pt.Label)
+                .Select(pt => new GroupedProducts
+                {
+                    TypeId = pt.ProductTypeId,
+                    TypeName = pt.Label,
+                    ProductCount = pt.Products.Where(p => p.Active == true).Count(),
+                    Products = pt.Products.OrderByDescending(p => p.DateCreated).Where(p => p.Active == true).Take(3)
+                }).ToListAsync();
+
+            return View(model);
+        }
     }
 }
