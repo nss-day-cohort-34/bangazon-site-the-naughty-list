@@ -9,9 +9,12 @@ using Bangazon.Data;
 using Bangazon.Models;
 using Bangazon.Models.ProductViewModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Bangazon.Controllers
 {
+    [Authorize]
+    // TODO: Confirm if client wants unauthorized users to be able to view products
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
