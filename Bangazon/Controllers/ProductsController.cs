@@ -265,38 +265,6 @@ namespace Bangazon.Controllers
             return _context.Product.Any(e => e.ProductId == id);
         }
 
-        public async Task<IActionResult> IncompleteOrders()
-        {
-            var user = await GetCurrentUserAsync();
-            var incompleteOrders = await _context.Order
-                .Include(o => o.User)
-                .Include(o => o.OrderProducts)
-                .ThenInclude(op => op.Product)
-                .Where(o => o.PaymentType == null && o.OrderProducts.Any(op => op.Product.User == user))
-                .ToListAsync();
-
-            return View(incompleteOrders);
-        }
-        public async Task<IActionResult> MultipleOrders()
-        {
-            var user = await GetCurrentUserAsync();
-
-            var model = new MultipleOrdersViewModel();
-
-
-            model.MultipleOrdersList = await _context.ApplicationUsers
-                .Include(u => u.Orders)
-                .Where(u => u.Orders.Any(o => o.OrderProducts.Any(op => op.Product.User == user)))
-                .Where(u => u.Orders.Where(o => o.PaymentTypeId == null).Count() > 1)
-                .Select(u => new UserOrderCount
-                {
-                    User = u,
-                    OpenOrderCount = u.Orders.Where(o => o.PaymentTypeId == null).Count()
-                })
-                .ToListAsync();
-
-            return View(model);
-        }
         // Seller Methods
         // GET: Products
         public async Task<IActionResult> MyProducts()
