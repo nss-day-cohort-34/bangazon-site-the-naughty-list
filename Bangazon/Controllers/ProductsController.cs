@@ -159,7 +159,7 @@ namespace Bangazon.Controllers
 
                 _context.Add(viewModel.Product);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Types));
             }
             return View(viewModel);
         }
