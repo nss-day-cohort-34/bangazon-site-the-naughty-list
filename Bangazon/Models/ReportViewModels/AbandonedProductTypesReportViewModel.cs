@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace Bangazon.Models.ReportViewModels
 {
-    public class IncompleteOrderCount
+    public class AbandonedProductTypesReportViewModel
     {
+        public List<ProductTypeOrderCount> IncompleteOrderCounts { get; set; }
     }
 }

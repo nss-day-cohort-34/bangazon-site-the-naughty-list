@@ -67,17 +67,18 @@ namespace Bangazon.Controllers
         {
             var user = await GetCurrentUserAsync();
 
-            var model = new ProductTypesViewModel();
+            var model = new AbandonedProductTypesReportViewModel();
 
-            model.GroupedProducts = await _context
+            model.IncompleteOrderCounts = await _context
                 .ProductType
-                .OrderBy(pt => pt.Label)
-                .Select(pt => new GroupedProducts
+                .OrderBy(p => p.Label)
+                .Include(pt => pt.Products)
+                .ThenInclude(p => p.OrderProducts)
+                .ThenInclude(op => op.Order)
+                .Select(pt => new ProductTypeOrderCount
                 {
-                    TypeId = pt.ProductTypeId,
-                    TypeName = pt.Label,
-                    ProductCount = pt.Products.Where(p => p.Active == true).Count(),
-                    Products = pt.Products.OrderByDescending(p => p.DateCreated).Where(p => p.Active == true).Take(3)
+                    ProductType = pt,
+                    IncompleteOrderCount = 0
                 }).ToListAsync();
 
             return View(model);
