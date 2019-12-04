@@ -10,6 +10,8 @@ using Bangazon.Models;
 using Bangazon.Models.ProductViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Bangazon.Models.ReportViewModels;
+using System.Text.RegularExpressions;
 
 namespace Bangazon.Controllers
 {
@@ -56,7 +58,7 @@ namespace Bangazon.Controllers
             var orderId = 0;
             if (openOrder == null)
             {
-            // -- if no, create order in the order table and return new order ID
+                // -- if no, create order in the order table and return new order ID
                 var newOrder = new Order()
                 {
                     UserId = user.Id.ToString()
@@ -79,20 +81,15 @@ namespace Bangazon.Controllers
             _context.Add(newOrderProduct);
             await _context.SaveChangesAsync();
 
-            var errMsg = TempData["SuccessMessage"] as string;
+            var successMsg = TempData["SuccessMessage"] as string;
             TempData["SuccessMessage"] = "This product has been added to your shopping cart";
 
             return RedirectToAction(nameof(Details), new { id = productId });
         }
 
         // NOTE: Have to name the parameter in this function the same as the key in the anonymous object on the Razor page
-        public async Task<IActionResult> GetProductListForCategory( int productTypeId)
+        public async Task<IActionResult> GetProductListForCategory(int productTypeId)
         {
-            //var productList = await _context.Product
-            //    .Include(p => p.ProductType)
-            //    .Where(p => p.ProductTypeId == productTypeId && p.Active == true)
-            //    .ToListAsync();
-
             var productGroup = await _context
                 .ProductType
                     .OrderBy(pt => pt.Label)
@@ -146,12 +143,18 @@ namespace Bangazon.Controllers
         }
 
         // POST: Products/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductCreateViewModel viewModel)
         {
+            // When the process of creating a product fails due to ModelState validation or regex matching, the app needs to get the product categories again, so a newViewModel variable was needed inside this method.
+            var newViewModel = new ProductCreateViewModel()
+            {
+                ProductTypes = GetProductCategories()
+            };
+
             ModelState.Remove("Product.UserId");
             ModelState.Remove("Product.User");
             if (ModelState.IsValid)
@@ -159,12 +162,12 @@ namespace Bangazon.Controllers
                 var user = await GetCurrentUserAsync();
                 viewModel.Product.UserId = user.Id;
                 viewModel.Product.Active = true;
-
                 _context.Add(viewModel.Product);
+
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Types));
+                return RedirectToAction(nameof(MyProducts));
             }
-            return View(viewModel);
+            return View(newViewModel);
         }
 
         // GET: Products/Edit/5
@@ -186,7 +189,7 @@ namespace Bangazon.Controllers
         }
 
         // POST: Products/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -197,10 +200,14 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var user = await GetCurrentUserAsync();
+                    product.UserId = user.Id;
                     _context.Update(product);
                     await _context.SaveChangesAsync();
                 }
@@ -215,7 +222,7 @@ namespace Bangazon.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyProducts));
             }
             ViewData["ProductTypeId"] = new SelectList(_context.ProductType, "ProductTypeId", "Label", product.ProductTypeId);
             ViewData["UserId"] = new SelectList(_context.ApplicationUsers, "Id", "Id", product.UserId);
@@ -248,14 +255,33 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Product.FindAsync(id);
-            _context.Product.Remove(product);
+            product.Active = false;
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(MyProducts));
         }
 
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);
+        }
+
+        // Seller Methods
+        // GET: Products
+        public async Task<IActionResult> MyProducts()
+        {
+            var user = await GetCurrentUserAsync();
+            var applicationDbContext = _context.Product
+                .Include(p => p.ProductType)
+                .Include(p => p.User)
+                .Where(p => p.UserId == user.Id && p.Active == true);
+
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        private List<ProductType> GetProductCategories()
+        {
+            var productTypes = _context.ProductType.OrderBy(pt => pt.Label).ToList();
+            return productTypes;
         }
     }
 }

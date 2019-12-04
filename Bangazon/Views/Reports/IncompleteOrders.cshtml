@@ -1,0 +1,51 @@
+﻿@using Microsoft.AspNetCore.Identity
+
+@model IEnumerable<Bangazon.Models.Order>
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "IncompleteOrders";
+}
+
+<h1>Incomplete Orders</h1>
+
+
+<table class="table">
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>
+                    <h5>@order.User.FirstName @order.User.LastName</h5>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h6>Order #@Html.DisplayFor(modelItem => order.OrderId)</h6>
+                    @foreach (var OP in order.OrderProducts)
+                    {
+
+                        <ul>
+                            <li>
+                                @if(OP.Product.Active)
+                                {
+                                    @Html.ActionLink(OP.Product.Title.ToString(), "Details", "Products", new { id = OP.Product.ProductId })
+                                }
+                                else
+                                {
+                                    <span class="text-muted">@OP.Product.Title (No longer available)</span>
+                                }
+                                @if (OP.Product.UserId != UserManager.GetUserId(User))
+                                {
+                                    <span> (Sold by @OP.Product.User.FirstName @OP.Product.User.LastName)</span>
+                                }
+                             </li>
+                         </ul>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
