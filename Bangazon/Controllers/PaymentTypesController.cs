@@ -28,7 +28,7 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
-            var userPaymentTypes = await _context.PaymentType.Where(p => p.UserId == user.Id)
+            var userPaymentTypes = await _context.PaymentType.Where(p => p.UserId == user.Id && p.Active == true)
                                             .ToListAsync();
             return View(userPaymentTypes);
         }
@@ -160,10 +160,12 @@ namespace Bangazon.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var paymentType = await _context.PaymentType.FindAsync(id);
-            _context.PaymentType.Remove(paymentType);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            {
+                var paymentType = await _context.PaymentType.FindAsync(id);
+                paymentType.Active = false;
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         private bool PaymentTypeExists(int id)
