@@ -1,0 +1,46 @@
+﻿@model Bangazon.Models.CartViewModels.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<h1>Checkout</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Order.OrderProductsList[0].Product.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Order.OrderProductsList[0].Product.Price)
+            </th>
+
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Order.OrderProducts)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.Price)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="form-group">
+    <label asp-for="Order.PaymentTypeId" class="control-label"></label>
+    <select required asp-for="Order.PaymentTypeId" class="form-control" asp-items="@Model.PaymentTypeOptions"></select>
+    <span asp-validation-for="Order.PaymentTypeId" class="text-danger"></span>
+</div>
+
+<form asp-action="PlaceOrder">
+    <input type="hidden" asp-for="Order.OrderId" />
+    <input type="submit" value="Place Order" class="btn btn-primary" />
+</form>

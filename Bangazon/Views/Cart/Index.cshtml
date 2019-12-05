@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Bangazon.Models.OrderProduct>
+﻿@model Bangazon.Models.Order
 
 @{
     ViewData["Title"] = "Index";
@@ -10,29 +10,35 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Product.Title)
+                @Html.DisplayNameFor(model => model.OrderProductsList[0].Product.Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Product.Price)
+                @Html.DisplayNameFor(model => model.OrderProductsList[0].Product.Price)
             </th>
 
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Product.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Product.Price)
-            </td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.OrderProductId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.OrderProductId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.OrderProducts)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.Price)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.OrderProductId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.OrderProductId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<form asp-action="Checkout">
+    <input type="hidden" asp-for="OrderId" />
+    <input type="submit" value="Proceed to Checkout" class="btn btn-primary" /> 
+</form>
