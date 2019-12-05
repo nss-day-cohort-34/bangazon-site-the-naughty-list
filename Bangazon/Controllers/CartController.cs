@@ -115,6 +115,30 @@ namespace Bangazon.Controllers
         }
 
         // POST: Place order - check all the stuff
+        public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
+        {
+            ModelState.Remove("Order.UserId");
+            ModelState.Remove("Order.User");
+
+            if (ModelState.IsValid)
+            {
+                var user = await GetCurrentUserAsync();
+                model.Order.UserId = user.Id;
+                _context.Update(model.Order);
+                await _context.SaveChangesAsync();
+
+                var newOrder = new Order
+                {
+                    UserId = user.Id,
+                    User = user
+                };
+                _context.Add(newOrder);
+                await _context.SaveChangesAsync();
+
+                return View(model);
+            }
+            return View(model);
+        }
 
         private bool ProductExists(int id)
         {

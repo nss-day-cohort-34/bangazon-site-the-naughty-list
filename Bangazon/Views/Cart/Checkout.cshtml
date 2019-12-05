@@ -34,13 +34,14 @@
     </tbody>
 </table>
 
+<form asp-action="PlaceOrder">
+
 <div class="form-group">
-    <label asp-for="Order.PaymentTypeId" class="control-label"></label>
+    <label asp-for="Order.PaymentType" class="control-label"></label>
     <select required asp-for="Order.PaymentTypeId" class="form-control" asp-items="@Model.PaymentTypeOptions"></select>
     <span asp-validation-for="Order.PaymentTypeId" class="text-danger"></span>
 </div>
 
-<form asp-action="PlaceOrder">
     <input type="hidden" asp-for="Order.OrderId" />
     <input type="submit" value="Place Order" class="btn btn-primary" />
 </form>
