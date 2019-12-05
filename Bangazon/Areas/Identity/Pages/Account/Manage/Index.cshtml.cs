@@ -37,7 +37,8 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
 
-            public string Address { get; set; }
+            [Display(Name = "Address")]
+            public string StreetAddress { get; set; }
 
             [Display(Name = "First Name")]
             public string FirstName { get; set; }
@@ -51,6 +52,7 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            var streetAddress = await _userManager.GetStreetAddressAsync(user);
 
             Username = userName;
 
