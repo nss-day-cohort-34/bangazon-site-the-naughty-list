@@ -7,6 +7,6 @@ namespace Bangazon.Models.ReportViewModels
 {
     public class AbandonedProductTypesReportViewModel
     {
-        public List<ProductTypeOrderCount> IncompleteOrderCounts { get; set; }
+        public List<ProductTypeOrderCount> IncompleteOrderCounts { get; set; } = new List<ProductTypeOrderCount>();
     }
 }
