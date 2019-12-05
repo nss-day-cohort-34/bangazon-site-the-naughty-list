@@ -54,9 +54,10 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Product
-                .Include(p => p.ProductType)
-                .Include(p => p.User)
+            var product = await _context
+                .Product
+                //.Include(p => p.ProductType)
+                //.Include(p => p.User)
                 .FirstOrDefaultAsync(m => m.ProductId == id);
             if (product == null)
             {
@@ -69,13 +70,21 @@ namespace Bangazon.Controllers
         // POST: Cart/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var orderproduct = await _context.OrderProduct.FindAsync();
-            _context.OrderProduct.Remove(Product);
+            var product = await _context.OrderProduct.FindAsync(id);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        /*
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var orderproduct = await _context.OrderProduct.FindAsync();
+            _context.OrderProduct.Remove();
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }*/
 
         // GET: Cart/Details/5
         public async Task<IActionResult> Details(int? id)
