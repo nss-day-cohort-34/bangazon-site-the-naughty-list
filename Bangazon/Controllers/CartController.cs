@@ -104,13 +104,20 @@ namespace Bangazon.Controllers
                                         .ThenInclude(op => op.Product)
                                         .Where(o => o.PaymentTypeId == null)
                                         .Where(o => o.User == user)
-                                        .FirstOrDefaultAsync()
-                                        ;
+                                        .FirstOrDefaultAsync();
+            var cartItems = await _context.OrderProduct.Where(op => op.OrderId == id).ToListAsync();
+            _context.OrderProduct.RemoveRange(cartItems);
+            await _context.SaveChangesAsync();
+            var removeOrder = await _context.Order.FindAsync(id);
+            _context.Order.Remove(removeOrder);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
 
-            return View(order);
+            //return View(order);
         }
 
         // POST: Cancel Order
+        /*
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrderConfirmed(int id)
         {
@@ -121,7 +128,7 @@ namespace Bangazon.Controllers
             _context.Order.Remove(order);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
+        }*/
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);
