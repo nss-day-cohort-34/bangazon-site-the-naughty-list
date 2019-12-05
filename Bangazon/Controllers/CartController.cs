@@ -112,7 +112,6 @@ namespace Bangazon.Controllers
 
         // POST: Cancel Order
         [ValidateAntiForgeryToken]
-
         public async Task<IActionResult> CancelOrderConfirmed(int id)
         {
             var cartItems = await _context.OrderProduct.Where(op => op.OrderId == id).ToListAsync();
