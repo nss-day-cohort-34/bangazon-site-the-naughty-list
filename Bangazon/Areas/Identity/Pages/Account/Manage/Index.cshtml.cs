@@ -15,14 +15,14 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ApplicationDbContext _context;
+  
 
         public IndexModel(
-            ApplicationDbContext context,
+            
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager)
         {
-            _context = context;
+          
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -56,15 +56,18 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
         {
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            var 
-
 
 
             Username = userName;
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                StreetAddress = user.StreetAddress
+
+
             };
         }
 
@@ -104,6 +107,10 @@ namespace Bangazon.Areas.Identity.Pages.Account.Manage
                     throw new InvalidOperationException($"Unexpected error occurred setting phone number for user with ID '{userId}'.");
                 }
             }
+            user.StreetAddress = Input.StreetAddress;
+            user.FirstName = Input.FirstName;
+            user.LastName = Input.LastName;
+            await _userManager.UpdateAsync(user);
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
