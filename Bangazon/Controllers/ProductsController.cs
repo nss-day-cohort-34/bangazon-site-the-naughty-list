@@ -12,22 +12,32 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ReportViewModels;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 namespace Bangazon.Controllers
 {
     [Authorize]
-    // TODO: Confirm if client wants unauthorized users to be able to view products
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IConfiguration _config;
 
 
-        public ProductsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ProductsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration config)
         {
             _context = context;
             _userManager = userManager;
+            _config = config;
+        }
 
+        public SqlConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
         }
 
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
@@ -108,7 +118,10 @@ namespace Bangazon.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Product.Include(p => p.ProductType).Include(p => p.User);
+            var applicationDbContext = _context.Product
+                .Include(p => p.ProductType)
+                .Include(p => p.User)
+                .Where(p => p.Active == true);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -269,13 +282,57 @@ namespace Bangazon.Controllers
         // GET: Products
         public async Task<IActionResult> MyProducts()
         {
-            var user = await GetCurrentUserAsync();
-            var applicationDbContext = _context.Product
-                .Include(p => p.ProductType)
-                .Include(p => p.User)
-                .Where(p => p.UserId == user.Id && p.Active == true);
 
-            return View(await applicationDbContext.ToListAsync());
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    var user = await GetCurrentUserAsync();
+
+                    cmd.CommandText = @"
+                                                    SELECT p.ProductId, p.Title, p.Description, p.Price, p.Quantity, p.City, p.ProductTypeId, pt.Label,
+                                                            COUNT(o.PaymentTypeId) AS CountOrders
+                                                    FROM Product p
+                                                            LEFT JOIN ProductType pt on p.ProductTypeId = pt.ProductTypeId
+                                                            LEFT JOIN OrderProduct op ON p.ProductId = op.ProductId
+                                                            LEFT JOIN [Order] o ON op.OrderId = o.OrderId
+                                                    WHERE(p.Active = 1 AND p.UserId = @userId)
+                                                    GROUP BY p.ProductId, p.Title, p.Description, p.Price, p.Quantity, p.City, p.ProductTypeId, pt.Label";
+                    cmd.Parameters.Add(new SqlParameter("@userId", user.Id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    List<Product> products = new List<Product>();
+
+                    while (reader.Read())
+                    {
+                        var newProduct = new Product
+                        {
+                            ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                            Title = reader.GetString(reader.GetOrdinal("Title")),
+                            Description = reader.GetString(reader.GetOrdinal("Description")),
+                            Price = reader.GetDouble(reader.GetOrdinal("Price")),
+                            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                            ProductsSold = reader.GetInt32(reader.GetOrdinal("CountOrders")),
+                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            ProductType = new ProductType
+                            {
+                                ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                Label = reader.GetString(reader.GetOrdinal("Label"))
+                            }
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("City")))
+                        {
+                            newProduct.City = reader.GetString(reader.GetOrdinal("City"));
+                        }
+
+                        products.Add(newProduct);
+                    }
+                    return View(products);
+
+                }
+            }
         }
 
         private List<ProductType> GetProductCategories()
