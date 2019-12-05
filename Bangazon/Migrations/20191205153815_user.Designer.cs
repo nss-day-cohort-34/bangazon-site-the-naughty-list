@@ -4,14 +4,16 @@ using Bangazon.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Bangazon.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191205153815_user")]
+    partial class user
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -100,7 +102,7 @@ namespace Bangazon.Migrations
                         {
                             Id = "00000000-ffff-ffff-ffff-ffffffffffff",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "e4cb8184-853d-4b9d-a795-6063d030c2a0",
+                            ConcurrencyStamp = "dc3b4603-4277-4bc9-805a-dd3685a91efc",
                             Email = "admin@admin.com",
                             EmailConfirmed = true,
                             FirstName = "Admina",
@@ -108,7 +110,7 @@ namespace Bangazon.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@ADMIN.COM",
                             NormalizedUserName = "ADMIN@ADMIN.COM",
-                            PasswordHash = "AQAAAAEAACcQAAAAEO+B98wNAoW7+tjUPd01roYHppIb5Z3vWHfgIKlFQC7QYojbduGGdMWhMJUc41/zoQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEG35Jrq11ez+Hg8Wfr/IJ3XlWk2gUmC/wKqfSh3Uw5ZPHFLeTnjvMgraAkclJMLTlA==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "7f434309-a4d9-48e9-9ebb-8803db794577",
                             StreetAddress = "123 Infinity Way",
@@ -119,7 +121,7 @@ namespace Bangazon.Migrations
                         {
                             Id = "00000000-ffff-ffff-ffff-fffffffffffg",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "b3a53d70-664c-41e7-80c8-8546b133edb1",
+                            ConcurrencyStamp = "135ad846-8fb0-4b46-999a-681654f32a91",
                             Email = "tom@cat.com",
                             EmailConfirmed = true,
                             FirstName = "Tom",
@@ -127,7 +129,7 @@ namespace Bangazon.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "TOM@CAT.COM",
                             NormalizedUserName = "TOM@CAT.COM",
-                            PasswordHash = "AQAAAAEAACcQAAAAEJbF93pLvoJC73G9VAFIN+oUa92tQjw6G8bxECA1Tk6CxYDdu8Fxm1jnqjFHIBEPWw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEJLip34Ow9anikOHZlybXoLXnk4qVptOY33fzUhEKOIHAArLA+OlacrGMTuAuqZsxw==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "7f434309-a4d9-48e9-9ebb-8803db794578",
                             StreetAddress = "123 Feline Way",
