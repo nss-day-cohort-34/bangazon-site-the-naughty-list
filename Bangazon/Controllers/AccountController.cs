@@ -32,10 +32,10 @@ namespace Bangazon.Controllers
                                             .ToListAsync();
             return View(userAccount);
         }
-     
 
-        // GET: Account Info/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+
+        // GET: AccountInfo/Edit/5
+        public async Task<IActionResult> Edit(string? id)
         {
             if (id == null)
             {
@@ -47,6 +47,7 @@ namespace Bangazon.Controllers
             {
                 return NotFound();
             }
+           
             return View(userAccount);
         }
 
