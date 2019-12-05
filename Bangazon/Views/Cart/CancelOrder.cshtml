@@ -1,10 +1,11 @@
 ﻿@model Bangazon.Models.Order
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "CancelOrder";
 }
 
-<h1>Shopping Cart</h1>
+<h1>CancelOrder</h1>
+<h4>Are your sure you want to cancel your order?</h4>
 
 <table class="table">
     <thead>
@@ -29,16 +30,14 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Product.Price)
                 </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@item.OrderProductId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.OrderProductId">Delete</a>
-                </td>
             </tr>
         }
     </tbody>
 </table>
-<form asp-action="CancelOrder">
+<form asp-action="CancelOrderConfirmed">
     <input type="hidden" asp-for="OrderId" />
     <input type="submit" value="Cancel Order" class="btn btn-primary" /> |
     <a asp-action="Index">Back to List</a>
 </form>
+
+@Html.ActionLink("Cancel Order", "CancelOrderConfirmed", "Cart", new { id = Model.OrderId })

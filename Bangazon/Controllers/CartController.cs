@@ -31,14 +31,15 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Index(int? id)
         {
             var user = await GetCurrentUserAsync();
-            var applicationDbContext = _context.OrderProduct
-                                        .Include(op => op.Product)
-                                        .Include(op => op.Order)
-                                        .Where(op => op.Order.PaymentTypeId == null)
-                                        .Where(op => op.Order.User == user)
+            var order = await _context.Order
+                                        .Include(o => o.OrderProducts)
+                                        .ThenInclude(op => op.Product)
+                                        .Where(o => o.PaymentTypeId == null)
+                                        .Where(o => o.User == user)
+                                        .FirstOrDefaultAsync()
                                         ;
-                                        
-            return View(await applicationDbContext.ToListAsync());
+
+            return View(order);
         }
         
         // GET: Cart/Delete/5
@@ -94,6 +95,34 @@ namespace Bangazon.Controllers
             return View(cartItem);
         }
 
+        // GET: Cancel Order
+        public async Task<IActionResult> CancelOrder(int? id)
+        {
+            var user = await GetCurrentUserAsync();
+            var order = await _context.Order
+                                        .Include(o => o.OrderProducts)
+                                        .ThenInclude(op => op.Product)
+                                        .Where(o => o.PaymentTypeId == null)
+                                        .Where(o => o.User == user)
+                                        .FirstOrDefaultAsync()
+                                        ;
+
+            return View(order);
+        }
+
+        // POST: Cancel Order
+        [ValidateAntiForgeryToken]
+
+        public async Task<IActionResult> CancelOrderConfirmed(int id)
+        {
+            var cartItems = await _context.OrderProduct.Where(op => op.OrderId == id).ToListAsync();
+            _context.OrderProduct.RemoveRange(cartItems);
+            await _context.SaveChangesAsync();
+            var order = await _context.Order.FindAsync(id);
+            _context.Order.Remove(order);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
         private bool ProductExists(int id)
         {
             return _context.Product.Any(e => e.ProductId == id);
