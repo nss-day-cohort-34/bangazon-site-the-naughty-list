@@ -40,8 +40,8 @@
                 @Html.DisplayFor(modelItem => item.Product.Title)
             </td>
             <td>
-                <a asp-action="Details" asp-route-id="@item.ProductId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ProductId">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.OrderProductId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.OrderProductId">Delete</a>
             </td>
         </tr>
 }

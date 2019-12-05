@@ -28,8 +28,6 @@ namespace Bangazon.Controllers
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
 
         // GET: Cart
-       
-
         public async Task<IActionResult> Index(int? id)
         {
             var user = await GetCurrentUserAsync();
@@ -43,9 +41,6 @@ namespace Bangazon.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
         
-
-
-
         // GET: Cart/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -54,17 +49,17 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
-            var product = await _context
-                .Product
-                //.Include(p => p.ProductType)
-                //.Include(p => p.User)
-                .FirstOrDefaultAsync(m => m.ProductId == id);
-            if (product == null)
+            var cartItem = await _context
+                .OrderProduct
+                .Include(op => op.Product)
+                .ThenInclude(p => p.ProductType)
+                .FirstOrDefaultAsync(op => op.OrderProductId == id);
+            if (cartItem == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(cartItem);
         }
 
         // POST: Cart/Delete/5
@@ -73,18 +68,11 @@ namespace Bangazon.Controllers
 
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.OrderProduct.FindAsync(id);
+            var cartItem = await _context.OrderProduct.FindAsync(id);
+            _context.OrderProduct.Remove(cartItem);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-        /*
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var orderproduct = await _context.OrderProduct.FindAsync();
-            _context.OrderProduct.Remove();
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }*/
 
         // GET: Cart/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -94,16 +82,16 @@ namespace Bangazon.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Product
-                .Include(p => p.ProductType)
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(m => m.ProductId == id);
-            if (product == null)
+            var cartItem = await _context.OrderProduct
+                .Include(op => op.Product)
+                .ThenInclude(p => p.ProductType)
+                .FirstOrDefaultAsync(op => op.OrderProductId == id);
+            if (cartItem == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(cartItem);
         }
 
         private bool ProductExists(int id)
