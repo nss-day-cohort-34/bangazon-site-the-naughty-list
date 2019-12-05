@@ -16,7 +16,6 @@ using System.Text.RegularExpressions;
 namespace Bangazon.Controllers
 {
     [Authorize]
-    // TODO: Confirm if client wants unauthorized users to be able to view products
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
