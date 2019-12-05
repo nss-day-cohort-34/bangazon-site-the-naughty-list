@@ -7,22 +7,13 @@
 <div class="text-center">
     <h1 class="display-4">Bangazon</h1>
 </div>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.ActionLink(item.Title.ToString(), "Details", "Products", new { id = item.ProductId })
-                </td>
-            </tr>
-        }
-    </tbody>
-    </table>
+<div class="container">
+    @foreach (var item in Model)
+    {
+        <div class="row">
+            <div class="col">
+                @Html.ActionLink(item.Title.ToString(), "Details", "Products", new { id = item.ProductId })
+            </div>
+        </div>
+    }
+</div>

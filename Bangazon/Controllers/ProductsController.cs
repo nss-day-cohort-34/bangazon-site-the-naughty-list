@@ -272,7 +272,22 @@ namespace Bangazon.Controllers
             var applicationDbContext = _context.Product
                 .Include(p => p.ProductType)
                 .Include(p => p.User)
-                .Where(p => p.UserId == user.Id && p.Active == true);
+                .Include(p => p.OrderProducts)
+                    .ThenInclude(op => op.Order)
+                .Where(p => p.UserId == user.Id && p.Active == true)
+                ;
+
+    //        var applicationDbContext = _context.Product
+    //.Include(p => p.ProductType)
+    //.Include(p => p.User)
+    //.Where(p => p.UserId == user.Id && p.Active == true);
+
+            // SELECT p.ProductId, p.Title, p.Quantity, COUNT(op.OrderProductId) AS CountOrders
+            // FROM Product p
+            // INNER JOIN OrderProduct op ON p.ProductId = op.ProductId
+            // INNER JOIN[Order] o ON op.OrderId = o.OrderId
+            // WHERE(p.Active = 1 AND o.PaymentTypeId Is Not Null)
+            // GROUP BY p.ProductId, p.Title, p.Quantity
 
             return View(await applicationDbContext.ToListAsync());
         }
