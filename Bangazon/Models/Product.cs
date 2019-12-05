@@ -61,5 +61,7 @@ namespace Bangazon.Models
             Active = true;
         }
 
+        [NotMapped]
+        public int ProductsSold { get; set; }
     }
 }

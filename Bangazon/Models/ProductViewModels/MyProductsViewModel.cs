@@ -14,18 +14,18 @@ namespace Bangazon.Models.ProductViewModels
 
         public List<Order> Orders { get; set; }
         public OrderProduct OrderProduct { get; set; }
-        public int ProductsSold
-        {
+        //public int ProductsSold
+        //{
 
             // get total number of available products - Product.Quantity
             // get number of products on completed orders
 
 
-            get
-            {
-                return Product.Quantity - 
-            }
-        }
+        //    get
+        //    {
+        //        return Product.Quantity - 
+        //    }
+        //}
 
 
     }
