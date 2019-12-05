@@ -10,7 +10,7 @@ using Bangazon.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
-
+using Bangazon.Models.CartViewModels;
 
 namespace Bangazon.Controllers
 {
@@ -31,14 +31,15 @@ namespace Bangazon.Controllers
         public async Task<IActionResult> Index(int? id)
         {
             var user = await GetCurrentUserAsync();
-            var applicationDbContext = _context.OrderProduct
-                                        .Include(op => op.Product)
-                                        .Include(op => op.Order)
-                                        .Where(op => op.Order.PaymentTypeId == null)
-                                        .Where(op => op.Order.User == user)
+            var order = await _context.Order
+                                        .Include(o => o.OrderProducts)
+                                        .ThenInclude(op => op.Product)
+                                        .Where(o => o.PaymentTypeId == null)
+                                        .Where(o => o.User == user)
+                                        .FirstOrDefaultAsync()
                                         ;
-                                        
-            return View(await applicationDbContext.ToListAsync());
+
+            return View(order);
         }
         
         // GET: Cart/Delete/5
@@ -92,6 +93,51 @@ namespace Bangazon.Controllers
             }
 
             return View(cartItem);
+        }
+
+        // GET: Checkout - get all payment options for current user
+        public async Task<IActionResult> Checkout(int id)
+        {
+            var user = await GetCurrentUserAsync();
+            var model = new CheckoutViewModel
+            {
+                Order = await _context.Order
+                    .Include(o => o.OrderProducts)
+                    .ThenInclude(op => op.Product)
+                    .Where(o => o.User == user && o.PaymentTypeId == null)
+                    .FirstOrDefaultAsync(),
+                PaymentTypes = await _context.PaymentType
+                .Where(pt => pt.User == user && pt.Active == true)
+                .ToListAsync()
+            };
+
+            return View(model);
+        }
+
+        // POST: Place order - check all the stuff
+        public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
+        {
+            ModelState.Remove("Order.UserId");
+            ModelState.Remove("Order.User");
+
+            if (ModelState.IsValid)
+            {
+                var user = await GetCurrentUserAsync();
+                model.Order.UserId = user.Id;
+                _context.Update(model.Order);
+                await _context.SaveChangesAsync();
+
+                var newOrder = new Order
+                {
+                    UserId = user.Id,
+                    User = user
+                };
+                _context.Add(newOrder);
+                await _context.SaveChangesAsync();
+
+                return View(model);
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         private bool ProductExists(int id)
