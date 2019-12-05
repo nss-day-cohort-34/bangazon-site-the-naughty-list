@@ -1,26 +1,21 @@
 ﻿@model IEnumerable<Bangazon.Models.OrderProduct>
 
 @{
-    ViewData["Title"] = "Shopping Cart";
+    ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Shopping Cart</h1>
 
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Order.User)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.OrderId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ProductId)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Product.Title)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Product.Price)
+            </th>
+
             <th></th>
         </tr>
     </thead>
@@ -28,16 +23,10 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Order.User.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.OrderId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ProductId)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.Product.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Price)
             </td>
             <td>
                 <a asp-action="Details" asp-route-id="@item.OrderProductId">Details</a> |
