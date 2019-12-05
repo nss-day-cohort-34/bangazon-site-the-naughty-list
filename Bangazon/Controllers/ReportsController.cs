@@ -11,6 +11,8 @@ using Bangazon.Models.ProductViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Bangazon.Models.ReportViewModels;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 namespace Bangazon.Controllers
 {
@@ -19,13 +21,22 @@ namespace Bangazon.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IConfiguration _config;
 
 
-        public ReportsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ReportsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IConfiguration config)
         {
             _context = context;
             _userManager = userManager;
+            _config = config;
+        }
 
+        public SqlConnection Connection
+        {
+            get
+            {
+                return new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            }
         }
 
         private Task<ApplicationUser> GetCurrentUserAsync() => _userManager.GetUserAsync(HttpContext.User);
@@ -61,6 +72,54 @@ namespace Bangazon.Controllers
                 .ToListAsync();
 
             return View(model);
+        }
+
+        public async Task<IActionResult> AbandonedProductTypes()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    var user = await GetCurrentUserAsync();
+
+                    cmd.CommandText = @"
+                                        select ProductTypeId, Label, count(OrderId) as [IncompleteOrderCount]
+                                        from(select p.ProductTypeId, pt.Label, o.OrderId
+                                                from[Order] o
+                                                inner join OrderProduct op on op.OrderId = o.OrderId
+                                                inner join Product p on p.ProductId = op.ProductId
+                                                inner join ProductType pt on pt.ProductTypeId = p.ProductTypeId
+                                                where o.PaymentTypeId IS NULL and p.UserId = @userId
+                                                group by o.OrderId, p.ProductTypeId, pt.Label
+                                                     ) oo
+                                        group by ProductTypeId, Label
+                                        order by ProductTypeId
+                                      ";
+                    cmd.Parameters.Add(new SqlParameter("@userId", user.Id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    
+                    var model = new AbandonedProductTypesReportViewModel();
+                    
+                    while (reader.Read())
+                    {
+                        var newProductType = new ProductType
+                        {
+                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            Label = reader.GetString(reader.GetOrdinal("Label"))
+                        };
+
+                        var newProductTypeOrderCount = new ProductTypeOrderCount
+                        {
+                            ProductType = newProductType,
+                            IncompleteOrderCount = reader.GetInt32(reader.GetOrdinal("IncompleteOrderCount"))
+                        };
+                        model.IncompleteOrderCounts.Add(newProductTypeOrderCount);
+                    }
+                    return View(model);
+                } 
+            }
         }
     }
 }
