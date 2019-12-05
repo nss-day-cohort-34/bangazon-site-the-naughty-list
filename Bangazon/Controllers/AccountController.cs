@@ -65,8 +65,8 @@ namespace Bangazon.Controllers
             {
                 try
                 {
-                    var user = await _userManager.GetUserAsync(HttpContext.User);
-                    userAccount.Id = user.Id;
+                    //var user = await _userManager.GetUserAsync(HttpContext.User);
+                    //userAccount.Id = user.Id;
                     _context.Update(userAccount);
                     await _context.SaveChangesAsync();
                 }
