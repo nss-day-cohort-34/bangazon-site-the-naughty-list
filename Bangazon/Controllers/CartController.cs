@@ -137,7 +137,7 @@ namespace Bangazon.Controllers
 
                 return View(model);
             }
-            return View(model);
+            return RedirectToAction(nameof(Index));
         }
 
         private bool ProductExists(int id)
