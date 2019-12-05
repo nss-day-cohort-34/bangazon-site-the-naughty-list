@@ -288,12 +288,14 @@ namespace Bangazon.Controllers
                     var user = await GetCurrentUserAsync();
 
                     cmd.CommandText = @"
-                                                    SELECT p.ProductId, p.Title, p.Quantity, COUNT(op.OrderProductId) AS CountOrders
+                                                    SELECT p.ProductId, p.Title, p.Description, p.Price, p.Quantity, p.City, p.ProductTypeId, pt.Label,
+                                                            COUNT(op.OrderProductId) AS CountOrders
                                                     FROM Product p
-                                                    INNER JOIN OrderProduct op ON p.ProductId = op.ProductId
-                                                    INNER JOIN[Order] o ON op.OrderId = o.OrderId
+                                                            LEFT JOIN ProductType pt on p.ProductTypeId = pt.ProductTypeId
+                                                            INNER JOIN OrderProduct op ON p.ProductId = op.ProductId
+                                                            INNER JOIN [Order] o ON op.OrderId = o.OrderId
                                                     WHERE(p.Active = 1 AND o.PaymentTypeId Is Not Null AND p.UserId = @userId)
-                                                    GROUP BY p.ProductId, p.Title, p.Quantity";
+                                                    GROUP BY p.ProductId, p.Title, p.Description, p.Price, p.Quantity, p.City, p.ProductTypeId, pt.Label";
                     cmd.Parameters.Add(new SqlParameter("@userId", user.Id));
 
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -304,11 +306,19 @@ namespace Bangazon.Controllers
                     {
                         var newProduct = new Product
                         {
-                            ProductId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
                             Title = reader.GetString(reader.GetOrdinal("Title")),
+                            Description = reader.GetString(reader.GetOrdinal("Description")),
+                            Price = reader.GetDouble(reader.GetOrdinal("Price")),
                             Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
-                            ProductsSold = reader.GetInt32(reader.GetOrdinal("CountOrders"))
-                            // Add in other display properties
+                            City = reader.GetString(reader.GetOrdinal("City")),
+                            ProductsSold = reader.GetInt32(reader.GetOrdinal("CountOrders")),
+                            ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                            ProductType = new ProductType
+                            {
+                                ProductTypeId = reader.GetInt32(reader.GetOrdinal("ProductTypeId")),
+                                Label = reader.GetString(reader.GetOrdinal("Label"))
+                            }
                         };
                         products.Add(newProduct);
                     }
@@ -316,10 +326,6 @@ namespace Bangazon.Controllers
 
                 }
             }
-
-
-
-                //return View(await applicationDbContext.ToListAsync());
         }
 
         private List<ProductType> GetProductCategories()

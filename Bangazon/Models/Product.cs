@@ -62,6 +62,7 @@ namespace Bangazon.Models
         }
 
         [NotMapped]
+        [Display(Name = "Number Sold")]
         public int ProductsSold {get; set;}
 
     }
